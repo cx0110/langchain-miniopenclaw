@@ -1,0 +1,31 @@
+{
+  "id": "test-session",
+  "messages": [
+    {
+      "id": "msg_1774353333",
+      "role": "user",
+      "content": "Hello",
+      "created_at": 1774353333
+    },
+    {
+      "id": "msg_1774353333",
+      "role": "assistant",
+      "content": "这是一个测试响应（未配置LLM API密钥）",
+      "created_at": 1774353333
+    },
+    {
+      "id": "msg_1774353333",
+      "role": "user",
+      "content": "Hello",
+      "created_at": 1774353333
+    },
+    {
+      "id": "msg_1774353333",
+      "role": "assistant",
+      "content": "这是一个测试响应（未配置LLM API密钥）",
+      "created_at": 1774353333
+    }
+  ],
+  "created_at": 1774353333,
+  "updated_at": 1774353333
+}

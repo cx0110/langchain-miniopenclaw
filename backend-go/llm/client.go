@@ -17,3 +17,19 @@ type Message struct {
 	Role    string // "system", "user", "assistant", "tool"
 	Content string
 }
+
+// MockClient is a simple mock LLM client for testing or when no API key is configured
+type MockClient struct {
+	Response string
+	Err      error
+}
+
+// GenerateContent returns a fixed response or error
+func (m *MockClient) GenerateContent(ctx context.Context, prompt string) (string, error) {
+	return m.Response, m.Err
+}
+
+// GenerateContentWithMessages returns a fixed response or error
+func (m *MockClient) GenerateContentWithMessages(ctx context.Context, messages []Message) (string, error) {
+	return m.Response, m.Err
+}
