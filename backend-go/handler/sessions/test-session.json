@@ -24,8 +24,56 @@
       "role": "assistant",
       "content": "这是一个测试响应（未配置LLM API密钥）",
       "created_at": 1774353333
+    },
+    {
+      "id": "msg_1774410295",
+      "role": "user",
+      "content": "Hello",
+      "created_at": 1774410295
+    },
+    {
+      "id": "msg_1774410295",
+      "role": "assistant",
+      "content": "这是一个测试响应（未配置LLM API密钥）",
+      "created_at": 1774410295
+    },
+    {
+      "id": "msg_1774410295",
+      "role": "user",
+      "content": "Hello",
+      "created_at": 1774410295
+    },
+    {
+      "id": "msg_1774410295",
+      "role": "assistant",
+      "content": "这是一个测试响应（未配置LLM API密钥）",
+      "created_at": 1774410295
+    },
+    {
+      "id": "msg_1774410501",
+      "role": "user",
+      "content": "Hello",
+      "created_at": 1774410501
+    },
+    {
+      "id": "msg_1774410501",
+      "role": "assistant",
+      "content": "这是一个测试响应（未配置LLM API密钥）",
+      "created_at": 1774410501
+    },
+    {
+      "id": "msg_1774410501",
+      "role": "user",
+      "content": "Hello",
+      "created_at": 1774410501
+    },
+    {
+      "id": "msg_1774410501",
+      "role": "assistant",
+      "content": "这是一个测试响应（未配置LLM API密钥）",
+      "created_at": 1774410501
     }
   ],
   "created_at": 1774353333,
-  "updated_at": 1774353333
+  "updated_at": 1774410501
 }

@@ -9,6 +9,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"langchain-miniopenclaw-backend-go/config"
 	"langchain-miniopenclaw-backend-go/model"
 )
 
@@ -29,7 +30,20 @@ func TestChatHandler_NonStreaming(t *testing.T) {
 	c, _ := gin.CreateTestContext(w)
 	c.Request = httpReq
 
-	ChatHandler(c)
+	// Create handler with test config
+	testCfg := &config.Settings{
+		BackendDir:         ".", // Use current directory for sessions
+		ProjectRoot:        "..",
+		LLMProvider:        "zhipu",
+		LLMModel:           "glm-5",
+		LLMAPIKey:          "", // Empty key to use mock client
+		ComponentCharLimit: 20000,
+		TerminalTimeout:    30,
+		ServerHost:         "0.0.0.0",
+		ServerPort:         8002,
+	}
+	handler := NewHandler(testCfg)
+	handler.ChatHandler(c)
 
 	resp := w.Result()
 	defer resp.Body.Close()
@@ -56,7 +70,20 @@ func TestChatHandler_Streaming(t *testing.T) {
 	c, _ := gin.CreateTestContext(w)
 	c.Request = httpReq
 
-	ChatHandler(c)
+	// Create handler with test config
+	testCfg := &config.Settings{
+		BackendDir:         ".", // Use current directory for sessions
+		ProjectRoot:        "..",
+		LLMProvider:        "zhipu",
+		LLMModel:           "glm-5",
+		LLMAPIKey:          "", // Empty key to use mock client
+		ComponentCharLimit: 20000,
+		TerminalTimeout:    30,
+		ServerHost:         "0.0.0.0",
+		ServerPort:         8002,
+	}
+	handler := NewHandler(testCfg)
+	handler.ChatHandler(c)
 
 	resp := w.Result()
 	defer resp.Body.Close()

@@ -22,15 +22,15 @@ export function ChatMessage({
 
   return (
     <article
-      className={`max-w-[90%] rounded-[28px] px-5 py-4 ${
+      className={`max-w-[90%] rounded-[24px] px-6 py-4 ${
         isUser
-          ? "ml-auto bg-[rgba(13,37,48,0.92)] text-white"
-          : "panel mr-auto text-[var(--color-ink)]"
+          ? "ml-auto bg-[var(--color-ocean)] text-white"
+          : "panel mr-auto bg-[var(--color-frost)] text-[var(--color-ink)]`
       }`}
     >
       {!isUser && <RetrievalCard results={retrievals} />}
       {!isUser && <ThoughtChain toolCalls={toolCalls} />}
-      <div className={isUser ? "whitespace-pre-wrap leading-7" : "markdown"}>
+      <div className={isUser ? "whitespace-pre-wrap leading-relaxed" : "markdown"}>
         {isUser ? (
           content
         ) : (

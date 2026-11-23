@@ -13,9 +13,9 @@ export function ChatInput({
   const [value, setValue] = useState("");
 
   return (
-    <div className="panel rounded-[28px] p-3">
+    <div className="panel rounded-[24px] p-4">
       <textarea
-        className="min-h-28 w-full resize-none rounded-[22px] border border-[var(--color-line)] bg-white/70 px-4 py-3 outline-none"
+        className="min-h-[80px] w-full resize-none rounded-[20px] border border-[var(--color-line)] bg-white/60 px-5 py-4 outline-none focus:border-[var(--color-ocean)] focus:ring-1 focus:ring-[var(--color-ocean)]/20 transition-all duration-200"
         onChange={(event) => setValue(event.target.value)}
         onKeyDown={(event) => {
           if ((event.metaKey || event.ctrlKey) && event.key === "Enter") {
@@ -31,12 +31,12 @@ export function ChatInput({
         placeholder="输入你的问题，Cmd/Ctrl + Enter 发送"
         value={value}
       />
-      <div className="mt-3 flex items-center justify-between">
+      <div className="mt-4 flex items-center justify-between">
         <p className="text-sm text-[var(--color-ink-soft)]">
           支持工具调用、Memory 检索和多段响应。
         </p>
         <button
-          className="flex items-center gap-2 rounded-full bg-ocean px-4 py-2 text-sm text-white disabled:cursor-not-allowed disabled:bg-[rgba(15,139,141,0.45)]"
+          className="flex items-center gap-2 rounded-[20px] bg-ocean px-5 py-2.5 text-sm font-medium text-white hover:bg-ocean/90 disabled:cursor-not-allowed disabled:bg-[rgba(15,139,141,0.45)] transition-colors duration-200"
           disabled={disabled || !value.trim()}
           onClick={() => {
             const nextValue = value.trim();

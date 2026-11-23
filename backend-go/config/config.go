@@ -1,121 +1,119 @@
 package config
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 
-	"github.com/joho/godotenv"
+	"github.com/spf13/viper"
 )
 
-// LoadSettings loads configuration from environment and .env file
-func LoadSettings() (*Settings, error) {
-	// Load .env file from the current directory (where the Go binary runs)
-	_ = godotenv.Load() // Ignore error if .env doesn't exist
+type (
+	// Settings holds all configuration for the backend
+	Settings struct {
+		BackendDir        string
+		ProjectRoot       string
+		LLMProvider       string
+		LLMModel          string
+		LLMAPIKey         string
+		LLMBaseURL        string
+		EmbeddingProvider string
+		EmbeddingModel    string
+		EmbeddingAPIKey   string
+		EmbeddingBaseURL  string
+		// Additional settings as needed
+		ComponentCharLimit int    `mapstructure:"component_char_limit"`
+		TerminalTimeout    int    `mapstructure:"terminal_timeout"` // in seconds
+		ServerHost         string `mapstructure:"host"`
+		ServerPort         int    `mapstructure:"port"`
+	}
+)
 
-	// We'll also try to load from the backend directory (one level up if we are in backend-go/config)
-	// But let's keep it simple: we expect the .env to be in the same directory as the go.mod (backend-go)
-	// Since we are running from backend-go, the current directory is backend-go.
+// LoadSettings loads configuration from yaml file and environment variables
+func LoadSettings(configPath string) (*Settings, error) {
+	v := viper.New()
 
-	settings := &Settings{
-		BackendDir:        getEnv("BACKEND_DIR", ""),
-		ProjectRoot:       getEnv("PROJECT_ROOT", ""),
-		LLMProvider:       getEnv("LLM_PROVIDER", "zhipu"),
-		LLMModel:          getEnv("LLM_MODEL", ""),
-		LLMAPIKey:         getEnv("LLM_API_KEY", ""),
-		LLMBaseURL:        getEnv("LLM_BASE_URL", ""),
-		EmbeddingProvider: getEnv("EMBEDDING_PROVIDER", "bailian"),
-		EmbeddingModel:    getEnv("EMBEDDING_MODEL", ""),
-		EmbeddingAPIKey:   getEnv("EMBEDDING_API_KEY", ""),
-		EmbeddingBaseURL:  getEnv("EMBEDDING_BASE_URL", ""),
+	// Set config type to YAML
+	v.SetConfigType("yaml")
+
+	// If configPath is provided, use it
+	if configPath != "" {
+		v.SetConfigFile(configPath)
+	} else {
+		// Otherwise, look for config.yaml in current directory
+		v.AddConfigPath(".")
+		v.SetConfigName("config")
 	}
 
-	// Set defaults if not provided
-	if settings.BackendDir == "" {
-		// We can try to get the current directory
+	// Allow environment variables to override config
+	v.AutomaticEnv()
+
+	// Set defaults
+	v.SetDefault("llm.provider", "zhipu")
+	v.SetDefault("llm.model", "glm-5")
+	v.SetDefault("llm.base_url", "https://open.bigmodel.cn/api/paas/v4/")
+	v.SetDefault("embedding.provider", "bailian")
+	v.SetDefault("embedding.model", "text-embedding-v4")
+	v.SetDefault("embedding.base_url", "https://dashscope.aliyuncs.com/compatible-mode/v1")
+	v.SetDefault("backend.component_char_limit", 20000)
+	v.SetDefault("backend.terminal_timeout", 30)
+	v.SetDefault("server.host", "0.0.0.0")
+	v.SetDefault("server.port", 8002)
+
+	// Read config
+	if err := v.ReadInConfig(); err != nil {
+		// If config file not found, that's okay - we'll use defaults and env vars
+		if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
+			return nil, fmt.Errorf("error reading config file: %w", err)
+		}
+	}
+
+	// Unmarshal into Settings struct
+	var settings Settings
+	if err := v.Unmarshal(&settings); err != nil {
+		return nil, fmt.Errorf("unable to decode config into struct: %w", err)
+	}
+
+	// Handle nested structure from viper to map to our struct
+	// LLM settings
+	settings.LLMProvider = v.GetString("llm.provider")
+	settings.LLMModel = v.GetString("llm.model")
+	settings.LLMAPIKey = v.GetString("llm.api_key")
+	settings.LLMBaseURL = v.GetString("llm.base_url")
+
+	// Embedding settings
+	settings.EmbeddingProvider = v.GetString("embedding.provider")
+	settings.EmbeddingModel = v.GetString("embedding.model")
+	settings.EmbeddingAPIKey = v.GetString("embedding.api_key")
+	settings.EmbeddingBaseURL = v.GetString("embedding.base_url")
+
+	// Backend settings
+	settings.ComponentCharLimit = v.GetInt("backend.component_char_limit")
+	settings.TerminalTimeout = v.GetInt("backend.terminal_timeout")
+
+	// Override backend dir if set via env or config
+	if v.IsSet("backend.dir") && v.GetString("backend.dir") != "" {
+		settings.BackendDir = v.GetString("backend.dir")
+	} else {
+		// Default to current directory
 		dir, err := os.Getwd()
 		if err != nil {
 			return nil, err
 		}
 		settings.BackendDir = dir
 	}
-	if settings.ProjectRoot == "" {
-		// Assume project root is parent of backend_dir
+
+	// Override project root if set via env or config
+	if v.IsSet("backend.root") && v.GetString("backend.root") != "" {
+		settings.ProjectRoot = v.GetString("backend.root")
+	} else {
+		// Default to parent of backend_dir
 		settings.ProjectRoot = filepath.Join(settings.BackendDir, "..")
 	}
-	// Set default models based on provider
-	if settings.LLMModel == "" {
-		settings.LLMModel = getLLMModelDefault(settings.LLMProvider)
-	}
-	if settings.LLMBaseURL == "" {
-		settings.LLMBaseURL = getLLMBaseURLDefault(settings.LLMProvider)
-	}
-	if settings.EmbeddingModel == "" {
-		settings.EmbeddingModel = getEmbeddingModelDefault(settings.EmbeddingProvider)
-	}
-	if settings.EmbeddingBaseURL == "" {
-		settings.EmbeddingBaseURL = getEmbeddingBaseURLDefault(settings.EmbeddingProvider)
-	}
 
-	return settings, nil
-}
+	// Server settings (for main.go)
+	settings.ServerHost = v.GetString("server.host")
+	settings.ServerPort = v.GetInt("server.port")
 
-// Helper functions to get environment variables with fallbacks
-func getEnv(key, defaultValue string) string {
-	if value := os.Getenv(key); value != "" {
-		return value
-	}
-	return defaultValue
-}
-
-// Default values for LLM providers (mirroring the Python config)
-func getLLMModelDefault(provider string) string {
-	switch provider {
-	case "zhipu":
-		return "glm-5"
-	case "bailian":
-		return "qwen3.5-plus"
-	case "deepseek":
-		return "deepseek-chat"
-	case "openai":
-		return "gpt-4.1-mini"
-	default:
-		return "glm-5" // fallback
-	}
-}
-
-func getLLMBaseURLDefault(provider string) string {
-	switch provider {
-	case "zhipu":
-		return "https://open.bigmodel.cn/api/paas/v4/"
-	case "bailian":
-		return "https://dashscope.aliyuncs.com/compatible-mode/v1"
-	case "deepseek":
-		return "https://api.deepseek.com"
-	case "openai":
-		return "https://api.openai.com/v1"
-	default:
-		return "https://open.bigmodel.cn/api/paas/v4/"
-	}
-}
-
-func getEmbeddingModelDefault(provider string) string {
-	switch provider {
-	case "bailian":
-		return "text-embedding-v4"
-	case "openai":
-		return "text-embedding-3-small"
-	default:
-		return "text-embedding-v4"
-	}
-}
-
-func getEmbeddingBaseURLDefault(provider string) string {
-	switch provider {
-	case "bailian":
-		return "https://dashscope.aliyuncs.com/compatible-mode/v1"
-	case "openai":
-		return "https://api.openai.com/v1"
-	default:
-		return "https://dashscope.aliyuncs.com/compatible-mode/v1"
-	}
+	return &settings, nil
 }

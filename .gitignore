@@ -24,3 +24,6 @@ frontend/.npm-cache/
 *.log
 .DS_Store
 Thumbs.db
+# local deps
+node_modules/
+frontend-new/node_modules/

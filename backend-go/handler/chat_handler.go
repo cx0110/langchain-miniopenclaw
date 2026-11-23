@@ -13,31 +13,33 @@ import (
 	"langchain-miniopenclaw-backend-go/session"
 )
 
+// Handler encapsulates HTTP handler dependencies
+type Handler struct {
+	cfg *config.Settings
+}
+
+// NewHandler creates a new Handler with the given configuration
+func NewHandler(cfg *config.Settings) *Handler {
+	return &Handler{
+		cfg: cfg,
+	}
+}
+
 // ChatHandler handles the /chat endpoint
-func ChatHandler(c *gin.Context) {
+func (h *Handler) ChatHandler(c *gin.Context) {
 	var req model.ChatRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	// Initialize dependencies (in a real app, these would be singletons or injected)
-	// For this example, we'll create them here - in practice, you'd want to avoid
-	// creating new instances on every request
-	settings, err := config.LoadSettings()
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to load configuration"})
-		return
-	}
-
 	// Set up session manager
-	sessMgr := session.NewSessionManager(settings.BackendDir)
+	sessMgr := session.NewSessionManager(h.cfg.BackendDir)
 
-	// Set up LLM client (using OpenAI client as an example)
-	// In a real implementation, you would choose the client based on settings.LLMProvider
+	// Set up LLM client
 	var llmClient llm.LLMClient
-	if settings.LLMAPIKey != "" {
-		llmClient = llm.NewOpenAIClient(settings.LLMAPIKey, settings.LLMBaseURL, settings.LLMModel)
+	if h.cfg.LLMAPIKey != "" {
+		llmClient = llm.NewOpenAIClient(h.cfg.LLMAPIKey, h.cfg.LLMBaseURL, h.cfg.LLMModel)
 	} else {
 		// If no API key is set, create a mock client for testing/development
 		llmClient = &llm.MockClient{

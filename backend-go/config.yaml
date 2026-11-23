@@ -1,0 +1,37 @@
+# Example configuration file for langchain-miniopenclaw Go backend
+# Copy this to config.yaml and modify as needed
+
+# LLM (Language Model) Configuration
+llm:
+  provider: "zhipu"  # Options: zhipu, bailian, deepseek, openai
+  model: "glm-5"
+  api_key: "your_api_key_here"
+  base_url: "https://open.bigmodel.cn/api/paas/v4/"
+
+# Embedding Model Configuration
+embedding:
+  provider: "bailian"  # Options: bailian, openai
+  model: "text-embedding-v4"
+  api_key: "your_api_key_here"
+  base_url: "https://dashscope.aliyuncs.com/compatible-mode/v1"
+
+# Backend Settings
+backend:
+  # Directory for storing sessions, knowledge indices, etc.
+  # If not set, defaults to current working directory
+  dir: ""
+  
+  # Project root directory (for resolving relative paths)
+  # If not set, defaults to parent of backend_dir
+  root: ""
+  
+  # Character limit for components in prompts
+  component_char_limit: 20000
+  
+  # Timeout for terminal commands (in seconds)
+  terminal_timeout: 30
+
+# Optional: HTTP Server Settings
+server:
+  host: "0.0.0.0"
+  port: 8002
